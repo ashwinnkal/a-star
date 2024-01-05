@@ -103,7 +103,29 @@ namespace utility {
     void expandNeighbors(std::vector<int> &current,
                          std::vector<std::vector<int>> &list,
                          const std::tuple<int, int> &goal,
-                         std::vector<std::vector<labels>> &grid);
+                         std::vector<std::vector<labels>> &grid) {
+
+        int command[][2] = {{-1, 0},
+                            {0,  -1},
+                            {1,  0},
+                            {0,  1}};
+        int x = current[0];
+        int y = current[1];
+        int g = current[2];
+
+        auto [x2, y2] = goal;
+
+        for (auto &i: command) {
+            int X = x + i[0];
+            int Y = y + i[1];
+
+            if (checkCell(X, Y, grid)) {
+                int G = g + 1;
+                int H = calcAffine(X, Y, x2, y2);
+                addToList(X, Y, G, H, list, grid);
+            }
+        }
+    }
 
     //Search method
     std::vector<std::vector<labels>> aSearch(std::vector<std::vector<labels>> &grid,
