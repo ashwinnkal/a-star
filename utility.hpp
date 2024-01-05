@@ -6,8 +6,12 @@
 #ifndef A_UTILITY_HPP
 #define A_UTILITY_HPP
 
+#include <iostream>
 #include <vector>
 #include <string>
+#include <unordered_map>
+#include <fstream>
+#include <sstream>
 
 
 namespace utility {
@@ -20,13 +24,70 @@ namespace utility {
         goal = 5
     };
 
-    std::vector<labels> parseLine(std::string &some_string);
+    std::unordered_map<labels, std::string> labelMeans = {{labels::terrain,     "T"},
+                                                          {labels::open_path,   "."},
+                                                          {labels::closed_path, "#"},
+                                                          {labels::pathway,     "*"},
+                                                          {labels::start,       "?"},
+                                                          {labels::goal,        "$"}};
+
+    // helper for extractLines
+    std::vector<labels> parser(std::string &some_string) {
+
+        std::istringstream lineBuffer(some_string);
+        std::vector<labels> temp;
+        int num;
+        char ch;
+
+        while (lineBuffer >> num) {
+            if (num == 0)
+                temp.push_back(labels::open_path);
+            else
+                temp.push_back(labels::terrain);
+
+            lineBuffer >> ch;
+        }
+
+        return temp;
+    }
 
     std::vector<std::vector<labels>> extractLines(const std::string &some_path,
                                                   std::tuple<int, int> startPosition,
-                                                  std::tuple<int, int> endPosition);
+                                                  std::tuple<int, int> endPosition) {
 
-    void printBoard(const std::vector<std::vector<labels>> &some_board);
+        std::ifstream myFile(some_path);
+        std::string str;
+        std::vector<std::vector<labels>> temp;
+        std::vector<labels> eachLine;
+
+        if (myFile.is_open()) {
+            
+            while (std::getline(myFile, str)) {
+                eachLine = parser(str);
+                temp.push_back(eachLine);
+
+                if (!eachLine.empty())
+                    eachLine.clear();
+            }
+        }
+
+        //modify start and goal positions
+        auto [x1, y1] = startPosition;
+        auto [x2, y2] = endPosition;
+        temp[x1][y1] = labels::start;
+        temp[x2][y2] = labels::goal;
+
+        return temp;
+    }
+
+    void printBoard(const std::vector<std::vector<labels>> &some_board) {
+
+        for (const auto &a: some_board) {
+            for (auto i: a)
+                std::cout << " " << labelMeans[i] << " ";
+            std::cout << std::endl;
+        }
+    }
 
 }
 
