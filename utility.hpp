@@ -52,8 +52,8 @@ namespace utility {
     }
 
     std::vector<std::vector<labels>> extractLines(const std::string &some_path,
-                                                  std::tuple<int, int> startPosition,
-                                                  std::tuple<int, int> endPosition) {
+                                                  std::tuple<int, int> &startPosition,
+                                                  std::tuple<int, int> &endPosition) {
 
         std::ifstream myFile(some_path);
         std::string str;
@@ -61,7 +61,7 @@ namespace utility {
         std::vector<labels> eachLine;
 
         if (myFile.is_open()) {
-            
+
             while (std::getline(myFile, str)) {
                 eachLine = parser(str);
                 temp.push_back(eachLine);
@@ -87,6 +87,22 @@ namespace utility {
                 std::cout << " " << labelMeans[i] << " ";
             std::cout << std::endl;
         }
+    }
+
+    std::vector<std::vector<labels>> aSearch(std::vector<std::vector<labels>> &grid,
+                                             const std::tuple<int, int> &start,
+                                             const std::tuple<int, int> &goal) {
+        //extract start & goal positions.
+        auto [x1, y1] = start;
+        auto [x2, y2] = goal;
+
+        //set default G and H values.
+
+        //check until all queued items exists.
+        while(false){};
+
+        std::cout << "No path found";
+        return std::vector<std::vector<labels>>{};
     }
 
 }
