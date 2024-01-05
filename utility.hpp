@@ -31,7 +31,7 @@ namespace utility {
                                                           {labels::start,       "?"},
                                                           {labels::goal,        "$"}};
 
-    // helper for extractLines
+    // helpers for extractLines
     std::vector<labels> parser(std::string &some_string) {
 
         std::istringstream lineBuffer(some_string);
@@ -89,6 +89,23 @@ namespace utility {
         }
     }
 
+    //search method helpers.
+    bool checkCell(int &a, int &b, std::vector<std::vector<labels>> &grid);
+
+    void sortQue(std::vector<std::vector<int>> &list);
+
+    void addToList(int a, int b, int cost, int heuristic,
+                   std::vector<std::vector<int>> &list,
+                   std::vector<std::vector<labels>> &grid);
+
+    int heuristicEst(int a1, int b1, int a2, int b2);
+
+    void expandNeighbors(std::vector<int> &current,
+                         std::vector<std::vector<int>> &list,
+                         const std::tuple<int, int> &goal,
+                         std::vector<std::vector<labels>> &grid);
+
+    //Search method
     std::vector<std::vector<labels>> aSearch(std::vector<std::vector<labels>> &grid,
                                              const std::tuple<int, int> &start,
                                              const std::tuple<int, int> &goal) {
@@ -97,9 +114,30 @@ namespace utility {
         auto [x2, y2] = goal;
 
         //set default G and H values.
+        int g = 0;
+        int h = heuristicEst(x1, y1, x2, y2);
+
+        std::vector<std::vector<int>> que{};
+        addToList(x1, y1, g, h, que, grid);
 
         //check until all queued items exists.
-        while(false){};
+        while (!que.empty()) {
+            sortQue(que);
+            auto header = que.back();
+            que.pop_back();
+            int x = header[0];
+            int y = header[1];
+            grid[x][y] = labels::closed_path;
+
+
+            if (x == x2 && y == y2) {
+                grid[x1][y1] = labels::start;
+                grid[x2][y2] = labels::goal;
+                return grid;
+            }
+
+            expandNeighbors(header, que, goal, grid);
+        }
 
         std::cout << "No path found";
         return std::vector<std::vector<labels>>{};
