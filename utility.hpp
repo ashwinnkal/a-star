@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 
 namespace utility {
@@ -90,15 +91,34 @@ namespace utility {
     }
 
     //search method helpers.
-    bool checkCell(int &a, int &b, std::vector<std::vector<labels>> &grid);
+    bool checkCell(int &a, int &b, std::vector<std::vector<labels>> &grid) {
+        bool check_a = (a >= 0 && a < grid.size());
+        bool check_b = (b >= 0 && b < grid[0].size());
 
-    void sortQue(std::vector<std::vector<int>> &list);
+        if (check_a && check_b)
+            return grid[a][b] == labels::open_path;
+
+        return false;
+    }
+
+    void sortQue(std::vector<std::vector<int>> &list) {
+        std::sort(list.begin(), list.end(), [](const auto a, const auto b) {
+            return a[2] + a[3] < b[2] + b[3];
+        });
+
+    }
 
     void addToList(int a, int b, int cost, int heuristic,
                    std::vector<std::vector<int>> &list,
-                   std::vector<std::vector<labels>> &grid);
+                   std::vector<std::vector<labels>> &grid) {
 
-    int heuristicEst(int a1, int b1, int a2, int b2);
+        list.push_back(std::vector<int>{a, b, cost, heuristic});
+        //grid[a][b] = labels::closed_path;
+    }
+
+    int heuristicEst(int a1, int b1, int a2, int b2) {
+        return std::abs(a2 - a1) + std::abs(b2 - b1);
+    }
 
     void expandNeighbors(std::vector<int> &current,
                          std::vector<std::vector<int>> &list,
@@ -121,7 +141,7 @@ namespace utility {
 
             if (checkCell(X, Y, grid)) {
                 int G = g + 1;
-                int H = calcAffine(X, Y, x2, y2);
+                int H = heuristicEst(X, Y, x2, y2);
                 addToList(X, Y, G, H, list, grid);
             }
         }
