@@ -18,19 +18,24 @@
 namespace utility {
     enum struct labels {
         terrain = 0,
-        open_path = 1,
-        closed_path = 2,
+        empty = 1,
+        closed = 2,
         pathway = 3,
         start = 4,
         goal = 5
     };
 
-    std::unordered_map<labels, std::string> labelMeans = {{labels::terrain,     "T"},
-                                                          {labels::open_path,   "."},
-                                                          {labels::closed_path, "#"},
-                                                          {labels::pathway,     "*"},
-                                                          {labels::start,       "?"},
-                                                          {labels::goal,        "$"}};
+    std::unordered_map<labels, std::string> labelMeans = {{labels::terrain, "T"},
+                                                          {labels::empty,   "."},
+                                                          {labels::closed,  "#"},
+                                                          {labels::pathway, "*"},
+                                                          {labels::start,   "?"},
+                                                          {labels::goal,    "$"}};
+
+    // Logging methods helper
+    void logMessage(const std::string &message, std::ofstream &logFile) {
+        logFile << message << std::endl;
+    }
 
     // helpers for extractLines
     std::vector<labels> parser(std::string &some_string) {
@@ -42,7 +47,7 @@ namespace utility {
 
         while (lineBuffer >> num) {
             if (num == 0)
-                temp.push_back(labels::open_path);
+                temp.push_back(labels::empty);
             else
                 temp.push_back(labels::terrain);
 
@@ -96,24 +101,26 @@ namespace utility {
         bool check_b = (b >= 0 && b < grid[0].size());
 
         if (check_a && check_b)
-            return grid[a][b] == labels::open_path;
+            return grid[a][b] == labels::empty;
 
         return false;
     }
 
     void sortQue(std::vector<std::vector<int>> &list) {
         std::sort(list.begin(), list.end(), [](const auto a, const auto b) {
-            return a[2] + a[3] < b[2] + b[3];
+            return (a[2] + a[3]) > (b[2] + b[3]);
         });
 
     }
 
     void addToList(int a, int b, int cost, int heuristic,
                    std::vector<std::vector<int>> &list,
-                   std::vector<std::vector<labels>> &grid) {
+                   std::vector<std::vector<labels>> &grid, std::ofstream &logFile) {
 
         list.push_back(std::vector<int>{a, b, cost, heuristic});
-        //grid[a][b] = labels::closed_path;
+        logMessage("Adding node to queue: (" + std::to_string(a) + ", " + std::to_string(b) +
+                   ") with cost: " + std::to_string(cost) + " and heuristic: " + std::to_string(heuristic), logFile);
+        grid[a][b] = labels::closed;
     }
 
     int heuristicEst(int a1, int b1, int a2, int b2) {
@@ -123,26 +130,29 @@ namespace utility {
     void expandNeighbors(std::vector<int> &current,
                          std::vector<std::vector<int>> &list,
                          const std::tuple<int, int> &goal,
-                         std::vector<std::vector<labels>> &grid) {
+                         std::vector<std::vector<labels>> &grid, std::ofstream &logFile) {
 
-        int command[][2] = {{-1, 0},
+        int command[4][2] = {{-1, 0},
                             {0,  -1},
                             {1,  0},
                             {0,  1}};
-        int x = current[0];
-        int y = current[1];
+        int x1 = current[0];
+        int y1 = current[1];
         int g = current[2];
 
         auto [x2, y2] = goal;
 
         for (auto &i: command) {
-            int X = x + i[0];
-            int Y = y + i[1];
+            int a = x1 + i[0];
+            int b = y1 + i[1];
 
-            if (checkCell(X, Y, grid)) {
+            if (checkCell(a, b, grid)) {
                 int G = g + 1;
-                int H = heuristicEst(X, Y, x2, y2);
-                addToList(X, Y, G, H, list, grid);
+                int H = heuristicEst(a, b, x2, y2);
+                logMessage("Expanding to neighbor at (" + std::to_string(a) + ", " + std::to_string(b) +
+                           ") with G: " + std::to_string(G) + " and H: " + std::to_string(H), logFile);
+                addToList(a, b, G, H, list, grid, logFile);
+
             }
         }
     }
@@ -151,6 +161,15 @@ namespace utility {
     std::vector<std::vector<labels>> aSearch(std::vector<std::vector<labels>> &grid,
                                              const std::tuple<int, int> &start,
                                              const std::tuple<int, int> &goal) {
+
+        // Logging essentials
+        std::ofstream logFile("../log.txt");
+        if (!logFile.is_open()) {
+            std::cerr << "Failed to open log file." << std::endl;
+
+        }
+
+
         //extract start & goal positions.
         auto [x1, y1] = start;
         auto [x2, y2] = goal;
@@ -160,7 +179,7 @@ namespace utility {
         int h = heuristicEst(x1, y1, x2, y2);
 
         std::vector<std::vector<int>> que{};
-        addToList(x1, y1, g, h, que, grid);
+        addToList(x1, y1, g, h, que, grid, logFile);
 
         //check until all queued items exists.
         while (!que.empty()) {
@@ -169,7 +188,8 @@ namespace utility {
             que.pop_back();
             int x = header[0];
             int y = header[1];
-            grid[x][y] = labels::closed_path;
+            grid[x][y] = labels::pathway;
+            logMessage("Current node: (" + std::to_string(x) + ", " + std::to_string(y) + ")", logFile);
 
 
             if (x == x2 && y == y2) {
@@ -178,10 +198,12 @@ namespace utility {
                 return grid;
             }
 
-            expandNeighbors(header, que, goal, grid);
+            expandNeighbors(header, que, goal, grid, logFile);
         }
 
         std::cout << "No path found";
+        logMessage("No path found", logFile);
+        logFile.close();
         return std::vector<std::vector<labels>>{};
     }
 

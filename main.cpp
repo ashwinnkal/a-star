@@ -1,19 +1,20 @@
 //
 // Created by Ashwinn.
-// This program demonstrates the working of A* search for finding a shortest path on a nxn grid.
+// This program demonstrates the working of A* search for finding the shortest path on a nxn grid.
 //
 
 #include "utility.hpp"
 #include <iostream>
 #include <vector>
 #include <tuple>
+#include <fstream>
 
 
 int main() {
 
     // start & goal
     std::tuple<int, int> start = {0, 0};
-    std::tuple<int, int> goal = {2, 2};
+    std::tuple<int, int> goal = {2, 1};
 
     //get input from file
     std::string file_path = "input.txt";

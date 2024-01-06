@@ -1,0 +1,18 @@
+Adding node to queue: (0, 0) with cost: 0 and heuristic: 3
+Current node: (0, 0)
+Expanding to neighbor at (1, 0) with G: 1 and H: 2
+Adding node to queue: (1, 0) with cost: 1 and heuristic: 2
+Current node: (1, 0)
+Expanding to neighbor at (1, 1) with G: 2 and H: 1
+Adding node to queue: (1, 1) with cost: 2 and heuristic: 1
+Current node: (1, 1)
+Expanding to neighbor at (1, 2) with G: 3 and H: 2
+Adding node to queue: (1, 2) with cost: 3 and heuristic: 2
+Current node: (1, 2)
+Expanding to neighbor at (0, 2) with G: 4 and H: 3
+Adding node to queue: (0, 2) with cost: 4 and heuristic: 3
+Expanding to neighbor at (2, 2) with G: 4 and H: 1
+Adding node to queue: (2, 2) with cost: 4 and heuristic: 1
+Current node: (2, 2)
+Current node: (0, 2)
+No path found
